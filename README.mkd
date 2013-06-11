@@ -71,29 +71,25 @@ Future implementations can also control the intensity of the RGB values to incre
 
 Note: the pin numbers used below are the [Arduino][] equivalent pins. They are not the actual pin numbers 
 from the Atmega328 datasheet. 
-Haptic Feedback Motor (PWM control):
 
-* int motorPin = 5
+**Haptic Feedback Motor (PWM control):**
+ * int motorPin = 5
 
-8-bit shift register:
+**8-bit shift register:**
+ * int latchPin = 7
+ * int clockPin = 8
+ * int dataPin = 4
 
-* int latchPin = 7
-* int clockPin = 8
-* int dataPin = 4
+**7 segment brightness control (PWM control):**
+ * int digitLED = 6
 
-7 segment brightness control (PWM control):
+**RGB LEDs (PWM control):**
+ * int redLED = 9
+ * int blueLED = 10
+ * int greenLED = 11
 
-* int digitLED = 6
-
-RGB LEDs (PWM control):
-
-* int redLED = 9
-* int blueLED = 10
-* int greenLED = 11
-
-Input button: 
-
-* int buttonPin = 2;
+**Input button:**  
+ * int buttonPin = 2;
 
 ## Dependencies
 
