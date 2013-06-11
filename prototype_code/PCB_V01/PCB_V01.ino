@@ -3,8 +3,14 @@
 | Zachary Nelson
 | znelson1@ford.com
 | 
+| **To be used with Shift Knob VO1 PCBs**
+|
 | Test communication over USB with Android host 
 | to read in and display current gear.
+|
+| This code uses string-based communication which 
+| relies on unique end-of-string characters such as
+| '}' or '>'.
 |
 | Using a 74hc595 shift register and a
 | 7-sement display to display the numbers 0 - 9. It
@@ -13,15 +19,16 @@
 ---------------------------------------------------
 */
 
+// 0bEDC*BAFG
 //7segment digits.
 const byte all_digits[10] = {
-  0b11110111,0b11101110,0b10010100,0b11000100, //-,1,2,3
-  0b11100010,0b11000001,0b10000011,0b11101100, //4,5,6,7
-  0b10000000,0b11100000};                    //8,9
+  0b11111110,0b11010111,0b00110010,0b10010010, //-,1,2,3
+  0b11010100,0b10011000,0b00011100,0b11010011, //4,5,6,7
+  0b00010000,0b10010000};                    //8,9
 
 const byte circle[6] = {
-  0b10101000,0b11001000,0b10001100,0b10001010,
-  0b10001001,0b10011000};                    
+  0b00010101,0b00011001,0b00110001,0b01010001,
+  0b10010001,0b00010011};                    
   
 int digit0 = 0b10001000;
 int digit1 = 0b11101110;
@@ -44,16 +51,24 @@ int clockPin = 8;
 int dataPin = 4;
 
 int motorPin = 5;
-long motor_time = 500; //number of milliseconds the motor vibrates
+long motor_on = 200; //number of milliseconds the motor vibrates
+long motor_off = 100; //pause between pulses
+
+int buttonPin = 2;
 
 int redLED = 9; //pwm
-int blueLED = 10; //pwm
+int blueLED = 3; //pwm
 int greenLED = 11; //pwm
 
 String inputString = "";
 boolean stringComplete = false;
 boolean USB_connected = false;
 unsigned long time = 0;
+
+int motorCount = 2;
+int motorPulse = 2;
+volatile int motorState = LOW;
+boolean motorCommand = false;
 
 void setup() {
   //set pins to output so you can control the shift register
@@ -62,16 +77,45 @@ void setup() {
   pinMode(dataPin, OUTPUT);
   pinMode(motorPin, OUTPUT);
   
+  pinMode(10,INPUT); //dead pin
+  digitalWrite(10,HIGH);
+  
   pinMode(redLED, OUTPUT);
   pinMode(blueLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
+  
+  pinMode(buttonPin,OUTPUT);
+  digitalWrite(buttonPin,HIGH);
   
   Serial.begin(115200);
 }
 
 void loop() {
   
-  if (millis() - time >= motor_time) analogWrite(motorPin, 0);
+  //handle motor control
+  if (motorState == HIGH && (millis() - time) >= motor_on && motorCommand) {
+    motorState = LOW;
+    digitalWrite(motorPin, motorState);
+    time = millis();
+  }
+  
+  if (motorState == LOW && (millis() - time) >= motor_off 
+                          && motorPulse > 0 && motorCommand) {
+    motorState = HIGH;
+    digitalWrite(motorPin, motorState);
+    motorPulse -= 1;
+    time = millis();
+    
+    if (motorPulse <= 0) {
+      motorCommand = false;
+    }
+  }
+  
+  if (millis()-time >= motor_on && !motorCommand) {
+    motorState = LOW;
+    digitalWrite(motorPin, motorState);
+    motorPulse = motorCount;
+  }
   
   if (!USB_connected) {
     for (int c = 0; c < 6; c++) {
@@ -89,7 +133,10 @@ void loop() {
     }
     
     if (inputString[inputString.length()-1] == ']') {
-      analogWrite(motorPin, 200);
+      motorState = HIGH;
+      motorCommand = true;
+      digitalWrite(motorPin, motorState);
+      motorPulse -= 1;
       time = millis();
     }
     
@@ -145,6 +192,3 @@ void serialEvent() {
     }
   }
 }
-    
-    
-    

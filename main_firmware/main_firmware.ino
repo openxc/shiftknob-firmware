@@ -5,7 +5,7 @@
 | Zachary Nelson
 | znelson1@ford.com
 | 
-| **To be used with Shift Knob PCBs**
+| **To be used with Shift Knob V02 PCBs**
 |
 | This program reads in a JSON stream and controls
 | the following 3 components accordingly:
@@ -84,7 +84,7 @@ boolean motorCommand = false;
 aJsonStream serialStream(&Serial);
 
 void setup() {
-  //set pins to output so you can control the shift register
+
   pinMode(latchPin, OUTPUT);
   pinMode(clockPin, OUTPUT);
   pinMode(dataPin, OUTPUT);
