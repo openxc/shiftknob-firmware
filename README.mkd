@@ -22,12 +22,9 @@ This program reads in a JSON stream at a baud rate of `115200` and controls the 
 
 A 74hc595 shift register is used to control the 7-sement display and requires 3 inputs: 
 2 latch pins and 1 data pin. See this [tutorial](http://arduino.cc/en/Tutorial/ShiftOut) to learn
-more about shift registers.
-
-RGB LEDs are controlled with 3 PWM pins and the Haptic feedback motor is controlled with another PWM pin. 
-
-There is also a PWM pin connection for controlling the brightness of the 7 segment display, 
-but this functionality has not yet been implemented.
+more about shift registers. RGB LEDs are controlled with 3 PWM pins and the Haptic feedback motor 
+is controlled with another PWM pin. There is also a PWM pin connection for controlling the brightness 
+of the 7 segment display, but this functionality has not yet been implemented.
 
 ## Haptic Feedback Motor Control
 
@@ -51,7 +48,7 @@ at some given ratio. A value of 0 is equal to 100% red whereas, a value of 85 is
 is 100% blue. Once the value reaches 255, it is back to 100% red. Anywhere in between is a mixture. For example,
 a value between 0 and 85 is some porportional mixture of red and green. 
 
-Future implementations can also control the intensity of the RGB values to increase or decrease the brightness.
+Future implementations can also control the intensity/brightness of the RGB values.
 
 ## Supported JSON Messages
 
@@ -94,7 +91,7 @@ from the Atmega328 datasheet.
 ## Dependencies
 
 In addition to the [Arduino][] developer environment, this project also requires [aJson][] to parse the 
-incoming JSON stream. Download the [aJson] repository and copy it to your local `examples` folder for
+incoming JSON stream. Download the [aJson] repository and copy it to your local `/examples` folder for
 your Arduino environment.
 
 ## Resources
@@ -116,13 +113,13 @@ versions for differing applications.
 repository contains the Android application to run on the OpenXC host device. This app sends the
 appropriate signals to the Shift Knob embedded system.
 
-### License
+## License
 
 The Android and firmware source code is available under the BSD open source
 license.
 
-The hardware schematics and enclosure design are available under the TAPR Open
-Hardware License.
+The hardware schematics and enclosure design are available under the 
+[Creative Commons Atribution 3.0 Unported](http://creativecommons.org/licenses/by/3.0/deed.en_US) license.
 
 [aJson]: http://github.com/interactive-matter/aJson
 [Arduino]: http://arduino.cc
