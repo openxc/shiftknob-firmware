@@ -14,6 +14,11 @@
 | 2. Haptic feedback motor
 | 3. RGB LEDs
 |
+| To change the haptic "feel" of the shift knob, change the 
+| following variables:
+|
+|
+| 
 | Below is a list of the current support JSON messages:
 |
 |  {"name": "shift", "value": true}  value is a boolean
@@ -30,6 +35,17 @@
 | has not yet been implemented.
 ---------------------------------------------------
 */
+
+//--CHANGE THESE---------//
+int motorCount = 1;
+int motorPulse = 1;
+int motorOn = 750; //duration of motor pulse
+int motorOff = 100; //duration of pause between pulses
+//-----------------------//
+
+int motorPin = 5;
+volatile int motorState = LOW;
+boolean motorCommand = false;
 
 // 0bEDC*BAFG
 //7 segment digits.
@@ -62,10 +78,6 @@ int clockPin = 8;
 ////Pin connected to DS of 74HC595
 int dataPin = 4;
 
-int motorPin = 5;
-int motorOn = 750; //number of milliseconds the motor vibrates
-int motorOff = 100; //pause between pulses
-
 int buttonPin = 2;
 
 int redLED = 9; //pwm
@@ -75,11 +87,6 @@ int digitLED = 6; //pwm. 7 segment brightness
 
 boolean usbConnected = false;
 volatile unsigned long time = 0;
-
-int motorCount = 1;
-int motorPulse = 1;
-volatile int motorState = LOW;
-boolean motorCommand = false;
 
 aJsonStream serialStream(&Serial);
 
