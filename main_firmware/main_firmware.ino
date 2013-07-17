@@ -41,11 +41,19 @@ int motorCount = 1;
 int motorPulse = 1;
 int motorOn = 750; //duration of motor pulse
 int motorOff = 100; //duration of pause between pulses
+
+int digitCount = 3;
+int digitPulse = 3;
+int digitPulseOn = 150;
+int digitPulseOff = 150;
 //-----------------------//
 
 int motorPin = 5;
 volatile int motorState = LOW;
 boolean motorCommand = false;
+
+volatile int digitPulseState = LOW;
+boolean digitPulseCommand = false;
 
 // 0bEDC*BAFG
 //7 segment digits.
@@ -83,7 +91,7 @@ int buttonPin = 2;
 int redLED = 9; //pwm
 int blueLED = 10; //pwm
 int greenLED = 11; //pwm
-int digitLED = 6; //pwm. 7 segment brightness
+int digitLEDControl = 6; //pwm. 7 segment brightness
 
 boolean usbConnected = false;
 volatile unsigned long time = 0;
@@ -99,9 +107,9 @@ void setup() {
   pinMode(redLED, OUTPUT);
   pinMode(blueLED, OUTPUT);
   pinMode(greenLED, OUTPUT);
-  pinMode(digitLED, OUTPUT);
+  pinMode(digitLEDControl, OUTPUT);
   
-  digitalWrite(digitLED, LOW);
+  digitalWrite(digitLEDControl, LOW);
   analogWrite(blueLED, 100);
   analogWrite(redLED, 100);
   analogWrite(greenLED, 100);
@@ -111,6 +119,7 @@ void setup() {
 
 void loop() {
   controlMotor();
+  controlDigitFlash();
   getData();
   isUsbConnected();
 }
@@ -153,6 +162,34 @@ void controlMotor() {
   }
 }
 
+void controlDigitFlash() {
+  // same control scheme as controlMotor()
+  if (digitPulseState == HIGH && (millis() - time) >= digitPulseOff && digitPulseCommand) {
+    digitPulseState = LOW;
+    digitalWrite(digitLEDControl, digitPulseState);
+    time = millis();
+  }
+
+  if (digitPulseState == LOW && (millis() - time) >= digitPulseOn 
+                          && digitPulse > 0 && digitPulseCommand) {
+    digitPulseState = HIGH;
+    digitalWrite(digitLEDControl, digitPulseState);
+    digitPulse -= 1;
+    time = millis();
+    
+    if (digitPulse <= 0) {
+      digitPulseCommand = false;
+    }
+  }
+  
+
+  if ((millis()-time) >= digitPulseOn && !digitPulseCommand) {
+    digitPulseState = LOW;
+    digitalWrite(digitLEDControl, digitPulseState);
+    digitPulse = digitCount;
+  }
+}
+
 void getData() {
   if (serialStream.available()) {
     serialStream.skip();
@@ -189,10 +226,20 @@ void processMessage(aJsonObject *msg) {
   }
   
   if (sName == "shift" && iValue) {
-    motorState = HIGH;
-    motorCommand = true;
-    digitalWrite(motorPin, motorState);
-    motorPulse -= 1;
+    if (motorPulse > 0) {
+      motorState = HIGH;
+      motorCommand = true;
+      digitalWrite(motorPin, motorState);
+      motorPulse -= 1;
+    }
+    
+    if (digitPulse > 0) {
+      digitPulseState = HIGH;
+      digitPulseCommand = true;
+      digitalWrite(digitLEDControl, digitPulseState);
+      digitPulse -= 1;
+    }
+    
     time = millis();
     return;
   }
