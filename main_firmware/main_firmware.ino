@@ -132,6 +132,9 @@ void controlMotor() {
     motorState = LOW;
     digitalWrite(motorPin, motorState);
     time = millis();
+    if (motorPulse <= 0) {
+      motorCommand = false;
+    }
   }
   
   // Is the motor off? Is so, has it been off for more time than motorOff?
@@ -140,7 +143,7 @@ void controlMotor() {
   // If all true, then turn on the motor, decrease the pulse count by 1 
   // and record the time. If the pulse count goes to 0 then turn off the 
   // motorCommand. The last haptic pulse has been sent.
-  if (motorState == LOW && (millis() - time) >= motorOff 
+  else if (motorState == LOW && (millis() - time) >= motorOff 
                           && motorPulse > 0 && motorCommand) {
     motorState = HIGH;
     digitalWrite(motorPin, motorState);
@@ -155,7 +158,7 @@ void controlMotor() {
   // If the motor has been on for time = motorOn and the motorCommand
   // has been switched to false, then turn off the motor, stop the haptic
   // feedback and reset the motorPulse to the original motorCount.
-  if ((millis()-time) >= motorOn && !motorCommand) {
+  else if ((millis()-time) >= motorOn && !motorCommand) {
     motorState = LOW;
     digitalWrite(motorPin, motorState);
     motorPulse = motorCount;
