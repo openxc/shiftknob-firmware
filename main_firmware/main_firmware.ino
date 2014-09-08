@@ -37,9 +37,9 @@
 */
 
 //--CHANGE THESE---------//
-int motorCount = 1;
-int motorPulse = 1;
-int motorOn = 750; //duration of motor pulse
+int motorCount = 2;
+int motorPulse = 2;
+int motorOn = 350; //duration of motor pulse
 int motorOff = 100; //duration of pause between pulses
 
 int digitCount = 3;
@@ -94,7 +94,8 @@ int greenLED = 11; //pwm
 int digitLEDControl = 6; //pwm. 7 segment brightness
 
 boolean usbConnected = false;
-volatile unsigned long time = 0;
+volatile unsigned long digitTime = 0;
+volatile unsigned long motorTime = 0;
 
 aJsonStream serialStream(&Serial);
 
@@ -109,10 +110,10 @@ void setup() {
   pinMode(greenLED, OUTPUT);
   pinMode(digitLEDControl, OUTPUT);
   
-  digitalWrite(digitLEDControl, LOW);
-  analogWrite(blueLED, 100);
-  analogWrite(redLED, 100);
-  analogWrite(greenLED, 100);
+  analogWrite(digitLEDControl, 50);
+  analogWrite(blueLED, 0);
+  analogWrite(redLED, 255);
+  analogWrite(greenLED, 0);
   
   Serial.begin(115200);
 }
@@ -128,10 +129,10 @@ void controlMotor() {
   // Is the motor on? If so, has it been on for more time than motorOn?
   // Is the motorCommand still ON or has it been turned off by other logic?
   // If all true, then turn off the motor and record the time.
-  if (motorState == HIGH && (millis() - time) >= motorOn && motorCommand) {
+  if (motorState == HIGH && (millis() - motorTime) >= motorOn && motorCommand) {
     motorState = LOW;
     digitalWrite(motorPin, motorState);
-    time = millis();
+    motorTime = millis();
     if (motorPulse <= 0) {
       motorCommand = false;
     }
@@ -143,12 +144,12 @@ void controlMotor() {
   // If all true, then turn on the motor, decrease the pulse count by 1 
   // and record the time. If the pulse count goes to 0 then turn off the 
   // motorCommand. The last haptic pulse has been sent.
-  else if (motorState == LOW && (millis() - time) >= motorOff 
+  else if (motorState == LOW && (millis() - motorTime) >= motorOff 
                           && motorPulse > 0 && motorCommand) {
     motorState = HIGH;
     digitalWrite(motorPin, motorState);
     motorPulse -= 1;
-    time = millis();
+    motorTime = millis();
     
     if (motorPulse <= 0) {
       motorCommand = false;
@@ -158,7 +159,7 @@ void controlMotor() {
   // If the motor has been on for time = motorOn and the motorCommand
   // has been switched to false, then turn off the motor, stop the haptic
   // feedback and reset the motorPulse to the original motorCount.
-  else if ((millis()-time) >= motorOn && !motorCommand) {
+  else if ((millis() - motorTime) >= motorOn && !motorCommand) {
     motorState = LOW;
     digitalWrite(motorPin, motorState);
     motorPulse = motorCount;
@@ -167,18 +168,18 @@ void controlMotor() {
 
 void controlDigitFlash() {
   // same control scheme as controlMotor()
-  if (digitPulseState == HIGH && (millis() - time) >= digitPulseOff && digitPulseCommand) {
+  if (digitPulseState == HIGH && (millis() - digitTime) >= digitPulseOff && digitPulseCommand) {
     digitPulseState = LOW;
     digitalWrite(digitLEDControl, digitPulseState);
-    time = millis();
+    digitTime = millis();
   }
 
-  if (digitPulseState == LOW && (millis() - time) >= digitPulseOn 
+  if (digitPulseState == LOW && (millis() - digitTime) >= digitPulseOn 
                           && digitPulse > 0 && digitPulseCommand) {
     digitPulseState = HIGH;
     digitalWrite(digitLEDControl, digitPulseState);
     digitPulse -= 1;
-    time = millis();
+    digitTime = millis();
     
     if (digitPulse <= 0) {
       digitPulseCommand = false;
@@ -186,7 +187,7 @@ void controlDigitFlash() {
   }
   
 
-  if ((millis()-time) >= digitPulseOn && !digitPulseCommand) {
+  if ((millis() - digitTime) >= digitPulseOn && !digitPulseCommand) {
     digitPulseState = LOW;
     digitalWrite(digitLEDControl, digitPulseState);
     digitPulse = digitCount;
@@ -243,7 +244,8 @@ void processMessage(aJsonObject *msg) {
       digitPulse -= 1;
     }
     
-    time = millis();
+    motorTime = millis();
+    digitTime = motorTime;
     return;
   }
   
